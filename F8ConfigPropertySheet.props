@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <UCwinRoadExe_win32>C:\Program Files (x86)\FORUM 8\UCwinRoad 16.0\UCwinRoad.exe</UCwinRoadExe_win32>
+    <UCwinRoadExe_win64>C:\Program Files\FORUM 8\UCwinRoad 16.0\UCwinRoad.exe</UCwinRoadExe_win64>
+    <UCwinRoadData>C:\UCwinRoad Data 16.0</UCwinRoadData>
+    <UCwinRoadExe_Parameter />
+  </PropertyGroup>
+  <PropertyGroup>
+    <_PropertySheetDisplayName>F8ConfigPropertySheet</_PropertySheetDisplayName>
+  </PropertyGroup>
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="UCwinRoadExe_win32">
+      <Value>$(UCwinRoadExe_win32)</Value>
+    </BuildMacro>
+    <BuildMacro Include="UCwinRoadExe_win64">
+      <Value>$(UCwinRoadExe_win64)</Value>
+    </BuildMacro>
+    <BuildMacro Include="UCwinRoadData">
+      <Value>$(UCwinRoadData)</Value>
+    </BuildMacro>
+    <BuildMacro Include="UCwinRoadExe_Parameter">
+      <Value>$(UCwinRoadExe_Parameter)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
