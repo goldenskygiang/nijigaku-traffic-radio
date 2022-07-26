@@ -1,7 +1,3 @@
-#ifdef __GNUG__ || __MINGW64__
-#define UNICODE
-#endif
-#include "F8API.h"
 #include "DetectAccidentPlugin.h"
 
 DetectAccidentPlugin DAPlugin;

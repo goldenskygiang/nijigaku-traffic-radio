@@ -1,59 +1,39 @@
 #include "DetectAccidentPlugin.h"
-#include "F8API.h"
 
-class DetectAccidentPlugin
+void DetectAccidentPlugin::InitializeMenu()
 {
-    F8MainRibbonTabProxy ribbonTab;
-    F8MainRibbonGroupProxy ribbonGroup;
+    F8MainFormProxy mainForm = g_applicationServices->GetMainForm();
+    F8MainRibbonProxy ribbonMenu = mainForm->GetMainRibbonMenu();
+    ribbonTab = ribbonMenu->GetTabByName(L"NijigakuPlugins");
 
-    F8MainRibbonButtonProxy startCaptureBtn;
-    void* startCaptureHandle;
-
-    void _onStartCaptureBtnClick()
+    if (!Assigned(ribbonTab))
     {
-        // main logic here
+        ribbonTab = ribbonMenu->CreateTab(L"NijigakuPlugins", 10000);
+        ribbonTab->SetCaption(L"Nijigaku Plugins");
     }
 
-    void _registerInput()
+    ribbonGroup = ribbonTab->CreateGroup(L"Group_DA", 1);
+    ribbonGroup->SetCaption(L"Detect Accident");
+
+    startCaptureBtn = ribbonGroup->CreateButton(L"StartCaptureBtn");
+    startCaptureBtn->SetCaption(L"Start Capture");
+    Cb_RibbonMenuItemOnClick callback = std::bind(&DetectAccidentPlugin::OnStartCaptureBtnClick, this);
+    startCaptureHandle = startCaptureBtn->SetCallbackOnClick(callback);
+}
+
+void DetectAccidentPlugin::UnloadMenu()
+{
+    startCaptureBtn->UnsetCallbackOnClick(startCaptureHandle);
+
+    ribbonTab->DeleteGroup(ribbonGroup);
+    if (ribbonTab->GetRibbonGroupsCount() == 0)
     {
-        startCaptureBtn = ribbonGroup->CreateButton(L"StartCaptureBtn");
-        startCaptureBtn->SetCaption(L"Start Capture");
-        Cb_RibbonMenuItemOnClick callback = std::bind(&DetectAccidentPlugin::_onStartCaptureBtnClick, this);
-        startCaptureHandle = startCaptureBtn->SetCallbackOnClick(callback);
+        g_applicationServices->GetMainForm()->GetMainRibbonMenu()->DeleteTab(ribbonTab);
     }
+}
 
-    void _unregisterHandles()
-    {
-        startCaptureBtn->UnsetCallbackOnClick(startCaptureHandle);
-    }
 
-public:
-    void InitializeMenu()
-    {
-        F8MainFormProxy mainForm = g_applicationServices->GetMainForm();
-        F8MainRibbonProxy ribbonMenu = mainForm->GetMainRibbonMenu();
-        ribbonTab = ribbonMenu->GetTabByName(L"NijigakuPlugins");
-
-        if (!Assigned(ribbonTab))
-        {
-            ribbonTab = ribbonMenu->CreateTab(L"NijigakuPlugins", 10000);
-            ribbonTab->SetCaption(L"Nijigaku Plugins");
-        }
-
-        ribbonGroup = ribbonTab->CreateGroup(L"Group_DA", 1);
-        ribbonGroup->SetCaption(L"Detect Accident");
-
-        _registerInput();
-    }
-
-    void UnloadMenu()
-    {
-        _unregisterHandles();
-
-        ribbonTab->DeleteGroup(ribbonGroup);
-        if (ribbonTab->GetRibbonGroupsCount() == 0)
-        {
-            g_applicationServices->GetMainForm()->GetMainRibbonMenu()->DeleteTab(ribbonTab);
-        }
-    }
-};
+void DetectAccidentPlugin::OnStartCaptureBtnClick()
+{
+    // main logic here
+}
