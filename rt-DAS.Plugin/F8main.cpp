@@ -2,16 +2,15 @@
 #define UNICODE
 #endif
 #include "F8API.h"
+#include "DetectAccidentPlugin.h"
+
+DetectAccidentPlugin DAPlugin;
 
 void StartProgram(void)
 {
-	//User Main Code Starts Here
-
-	//User Main Code Ends Here
+    DAPlugin.InitializeMenu();
 }
 void StopProgram(void)
 {
-	//User Main Code Starts Here
-
-	//User Main Code Ends Here
+    DAPlugin.UnloadMenu();
 }

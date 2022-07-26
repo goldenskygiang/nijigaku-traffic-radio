@@ -146,11 +146,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DetectAccidentPlugin.h" />
     <ClInclude Include="F8API.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DetectAccidentPlugin.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="F8API.cpp" />
     <ClCompile Include="F8main.cpp" />
