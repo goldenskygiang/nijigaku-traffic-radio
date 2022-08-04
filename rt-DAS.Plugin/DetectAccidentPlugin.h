@@ -1,6 +1,8 @@
 #pragma once
 
 #include "F8API.h"
+#include <atomic>
+#include <thread>
 
 class DetectAccidentPlugin
 {
@@ -12,6 +14,11 @@ private:
     F8MainRibbonButtonProxy stopCaptureBtn;
     void* startCaptureHandle;
     void* stopCaptureHandle;
+
+    std::thread daThread;
+    void DetectAccident();
+
+    std::atomic<bool> isCapturing;
 
 public:
     void InitializeMenu();
