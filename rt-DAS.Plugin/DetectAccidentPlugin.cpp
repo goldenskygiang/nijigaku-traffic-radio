@@ -2,6 +2,8 @@
 #include <thread>
 #include <iostream>
 #include <string>
+#include <sstream>
+#include <iomanip>
 #include <Windows.h>
 
 void DetectAccidentPlugin::InitializeMenu()
@@ -46,8 +48,6 @@ void DetectAccidentPlugin::UnloadMenu()
 
 void DetectAccidentPlugin::DetectAccident()
 {
-    int counter = 0;
-
     while (true)
     {
         if (!isCapturing.load())
@@ -57,13 +57,21 @@ void DetectAccidentPlugin::DetectAccident()
 
         // do stuff here
 
-        // code to test thread functionality. omit this please.
-        /*std::wstring dbg = std::to_wstring(counter) + L"\n";
+        F8MainFormProxy mainForm = g_applicationServices->GetMainForm();
+        F8MainCameraProxy mainCamera = mainForm->GetMainCamera();
+
+        auto pos = mainCamera->GetMainCameraState().eye;
+
+        // code to test camera pos & thread functionality.
+#ifndef NDEBUG
+        std::wostringstream _os;
+        _os << std::fixed << std::setprecision(3);
+        _os << "Camera XYZ: " << pos.X << " " << pos.Y << " " << pos.Z << "\n";
+        std::wstring dbg = _os.str();
         OutputDebugStringW(dbg.c_str());
-        counter++;
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));*/
 
-
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+#endif
     }
 }
 
