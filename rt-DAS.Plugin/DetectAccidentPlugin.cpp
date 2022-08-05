@@ -1,10 +1,14 @@
 #include "DetectAccidentPlugin.h"
+
 #include <thread>
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <iomanip>
 #include <Windows.h>
+#include <WinInet.h>
+
+#pragma comment(lib, "Wininet.lib")
 
 void DetectAccidentPlugin::InitializeMenu()
 {
@@ -64,13 +68,22 @@ void DetectAccidentPlugin::DetectAccident()
 
         // code to test camera pos & thread functionality.
 #ifndef NDEBUG
-        std::wostringstream _os;
+        std::ostringstream _os;
         _os << std::fixed << std::setprecision(3);
         _os << "Camera XYZ: " << pos.X << " " << pos.Y << " " << pos.Z << "\n";
-        std::wstring dbg = _os.str();
-        OutputDebugStringW(dbg.c_str());
+        std::string dbg = _os.str();
+        //OutputDebugStringW(dbg.c_str());
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        HINTERNET hSession = InternetOpenA("MyAgent", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+        HINTERNET hConnect = InternetConnect(hSession, L"webhook.site", 80, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 1);
+        HINTERNET hRequest = HttpOpenRequestA(hConnect, "POST", "/1270f543-8ace-4341-8bc8-1c27aad21ecf", NULL, NULL, NULL, 0, 1);
+        HttpSendRequestA(hRequest, NULL, 0, (LPVOID)dbg.c_str(), strlen(dbg.c_str()));
+
+        InternetCloseHandle(hSession);
+        InternetCloseHandle(hConnect);
+        InternetCloseHandle(hRequest);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 #endif
     }
 }
