@@ -1,0 +1,9 @@
+{
+  "name": "rt-das.client",
+  "version": "0.0.0",
+  "description": "rt-DAS.Client",
+  "main": "server.js",
+  "author": {
+    "name": ""
+  }
+}
