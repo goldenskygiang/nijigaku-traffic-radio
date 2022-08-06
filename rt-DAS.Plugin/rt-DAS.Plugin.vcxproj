@@ -146,6 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="DetectAccidentPlugin.h" />
     <ClInclude Include="F8API.h" />
     <ClInclude Include="framework.h" />
