@@ -92,7 +92,7 @@ void DetectAccidentPlugin::DetectAccident()
         // code to test camera pos & thread functionality.
 #ifndef NDEBUG
         PingTestCameraPosition(pos);
-        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(TEST_PERIOD_MILISEC));
 #endif
 
 
@@ -101,7 +101,6 @@ void DetectAccidentPlugin::DetectAccident()
 
 void DetectAccidentPlugin::OnStartCaptureBtnClick()
 {
-    // main logic here
     isCapturing.store(true);
     startCaptureBtn->SetEnabled(!isCapturing.load());
     stopCaptureBtn->SetEnabled(isCapturing.load());
