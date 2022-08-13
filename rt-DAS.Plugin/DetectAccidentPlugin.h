@@ -16,6 +16,7 @@ private:
     void* stopCaptureHandle;
 
     std::thread daThread;
+
     void DetectAccident();
 
     std::atomic<bool> isCapturing;

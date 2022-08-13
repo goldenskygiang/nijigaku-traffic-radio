@@ -151,6 +151,7 @@
     <ClInclude Include="F8API.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="DataModels.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DetectAccidentPlugin.cpp" />

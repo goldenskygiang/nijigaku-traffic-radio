@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+
 #include <Windows.h>
 #include <WinInet.h>
 
@@ -77,25 +78,38 @@ void DetectAccidentPlugin::DetectAccident()
 {
     while (true)
     {
-        if (!isCapturing.load())
-        {
-            return;
-        }
-
-        // do stuff here
+        if (!isCapturing.load()) return;
 
         F8MainFormProxy mainForm = g_applicationServices->GetMainForm();
-        F8MainCameraProxy mainCamera = mainForm->GetMainCamera();
 
-        auto pos = mainCamera->GetMainCameraState().eye;
+        F8SimulationCoreProxy sim = g_applicationServices->GetSimulationCore();
+        F8TrafficSimulationProxy traffic = sim->GetTrafficSimulation();
+        F8MainDriverProxy driver = Assigned(traffic) ? traffic->GetDriver() : NULL;
 
-        // code to test camera pos & thread functionality.
+        if (!Assigned(driver))
+        {
+            auto msgBox = MessageBox(
+                NULL,
+                L"Please start the driver simulation",
+                L"No traffic driver found",
+                MB_ICONHAND
+            );
+
+            return;
+        }
+        else
+        {
+            auto car = driver->GetCurrentCar();
+            auto pos = mainForm->GetMainCamera()->GetMainCameraState().eye;
+
+            // code to test camera pos & thread functionality.
+
 #ifndef NDEBUG
-        PingTestCameraPosition(pos);
-        std::this_thread::sleep_for(std::chrono::milliseconds(TEST_PERIOD_MILISEC));
+            PingTestCameraPosition(pos);
 #endif
-
-
+        }
+        
+        std::this_thread::sleep_for(std::chrono::milliseconds(TEST_PERIOD_MILISEC));
     }
 }
 

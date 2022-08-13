@@ -8,6 +8,6 @@ import * as functions from "firebase-functions";
 //   response.send("Hello from Firebase!");
 // });
 
-export const alertAccident = functions.https.onRequest((req, res) => {
-    // send push notification here
-});
+export const trackPosition = functions.https.onRequest((req, res) => {
+    // send vehicle position every 5 seconds
+})

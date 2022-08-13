@@ -9,3 +9,5 @@ static const wchar_t* DA_CAPTION = L"Detect Accident";
 static const wchar_t* TEST_HOSTNAME = L"webhook.site";
 static const char* TEST_ROUTE = "/1270f543-8ace-4341-8bc8-1c27aad21ecf";
 static const int TEST_PERIOD_MILISEC = 5000;
+
+static const wchar_t* EVENT_VARNAME = L"DA_Crash";
