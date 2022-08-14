@@ -1,5 +1,6 @@
 #include "DetectAccidentPlugin.h"
 #include "Constants.h"
+#include "DataModels.h"
 
 #include <thread>
 #include <iostream>
@@ -9,6 +10,10 @@
 
 #include <Windows.h>
 #include <WinInet.h>
+
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
 
 #pragma comment(lib, "Wininet.lib")
 
@@ -37,7 +42,14 @@ void DetectAccidentPlugin::InitializeMenu()
     callback = std::bind(&DetectAccidentPlugin::OnStopCaptureBtnClick, this);
     stopCaptureHandle = stopCaptureBtn->SetCallbackOnClick(callback);
 
-    isCapturing.store(false);
+    ReloadButtons(false);
+}
+
+void DetectAccidentPlugin::ReloadButtons(bool capturing)
+{
+    isCapturing.store(capturing);
+    startCaptureBtn->SetEnabled(!isCapturing.load());
+    stopCaptureBtn->SetEnabled(isCapturing.load());
 }
 
 void DetectAccidentPlugin::UnloadMenu()
@@ -64,50 +76,52 @@ void SendRequest(const wchar_t* hostname, const char* route, const char* method,
     InternetCloseHandle(hRequest);
 }
 
-void PingTestCameraPosition(F8dVec3 pos)
+void PingTestCameraPosition(F8dVec2 pos)
 {
-    std::ostringstream _os;
-    _os << std::fixed << std::setprecision(3);
-    _os << "Camera XYZ: " << pos.X << " " << pos.Y << " " << pos.Z << "\n";
-    std::string dbg = _os.str();
+    PositionUpdate upd("ExampleCar", pos.X, pos.Y, false);
+    json p = upd;
 
-    SendRequest(TEST_HOSTNAME, TEST_ROUTE, "POST", dbg);
+    SendRequest(TEST_HOSTNAME, TEST_ROUTE, "POST", p.dump());
 }
 
 void DetectAccidentPlugin::DetectAccident()
 {
-    while (true)
+    while (isCapturing.load())
     {
-        if (!isCapturing.load()) return;
-
-        F8MainFormProxy mainForm = g_applicationServices->GetMainForm();
-
         F8SimulationCoreProxy sim = g_applicationServices->GetSimulationCore();
+
         F8TrafficSimulationProxy traffic = sim->GetTrafficSimulation();
         F8MainDriverProxy driver = Assigned(traffic) ? traffic->GetDriver() : NULL;
+        F8TransientCarInstanceProxy car = Assigned(driver) ? driver->GetCurrentCar() : NULL;
 
-        if (!Assigned(driver))
+        if (!Assigned(driver) || !Assigned(car))
         {
+            ReloadButtons(false);
+
             auto msgBox = MessageBox(
                 NULL,
                 L"Please start the driver simulation",
                 L"No traffic driver found",
                 MB_ICONHAND
             );
-
+            
             return;
         }
-        else
-        {
-            auto car = driver->GetCurrentCar();
-            auto pos = mainForm->GetMainCamera()->GetMainCameraState().eye;
 
-            // code to test camera pos & thread functionality.
+        auto pos = car->GetPosition();
+        auto road = car->GetLatestRoad();
+
+        F8dVec2 xy, coord;
+        xy.X = pos.X, xy.Y = pos.Y;
+        F8HcsConvertResultType res;
+
+        coordConverter->Convert(_hcOpenGL_XZ, _hcGlobal_EN, xy, coord, res);
+
+        // code to test camera pos & thread functionality.
 
 #ifndef NDEBUG
-            PingTestCameraPosition(pos);
+        PingTestCameraPosition(coord);
 #endif
-        }
         
         std::this_thread::sleep_for(std::chrono::milliseconds(TEST_PERIOD_MILISEC));
     }
@@ -115,25 +129,13 @@ void DetectAccidentPlugin::DetectAccident()
 
 void DetectAccidentPlugin::OnStartCaptureBtnClick()
 {
-    isCapturing.store(true);
-    startCaptureBtn->SetEnabled(!isCapturing.load());
-    stopCaptureBtn->SetEnabled(isCapturing.load());
-
+    coordConverter = g_applicationServices->GetCoordinateConverter()->GetHorizontalCoordinateConvertor();
+    ReloadButtons(true);
     daThread = std::thread(&DetectAccidentPlugin::DetectAccident, this);
+    daThread.detach();
 }
 
 void DetectAccidentPlugin::OnStopCaptureBtnClick()
 {
-    if (!isCapturing.load())
-    {
-        startCaptureBtn->SetEnabled(!isCapturing.load());
-        stopCaptureBtn->SetEnabled(isCapturing.load());
-        return;
-    }
-
-    isCapturing.store(false);
-    startCaptureBtn->SetEnabled(!isCapturing.load());
-    stopCaptureBtn->SetEnabled(isCapturing.load());
-
-    daThread.join();
+    ReloadButtons(false);
 }

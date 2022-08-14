@@ -15,8 +15,11 @@ private:
     void* startCaptureHandle;
     void* stopCaptureHandle;
 
+    F8HorizontalCoordinateConverterProxy coordConverter;
+
     std::thread daThread;
 
+    void ReloadButtons(bool capturing);
     void DetectAccident();
 
     std::atomic<bool> isCapturing;
