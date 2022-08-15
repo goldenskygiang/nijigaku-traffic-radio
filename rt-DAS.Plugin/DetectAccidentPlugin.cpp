@@ -67,8 +67,10 @@ void DetectAccidentPlugin::UnloadMenu()
 void SendRequest(const wchar_t* hostname, const char* route, const char* method, std::string content)
 {
     HINTERNET hSession = InternetOpenA(NULL, INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
-    HINTERNET hConnect = InternetConnect(hSession, hostname, 80, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 1);
-    HINTERNET hRequest = HttpOpenRequestA(hConnect, method, route, NULL, NULL, NULL, 0, 1);
+    HINTERNET hConnect = InternetConnect(hSession, hostname, SSL_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 1);
+    HINTERNET hRequest = HttpOpenRequestA(
+        hConnect, method, route,
+        NULL, NULL, NULL, INTERNET_FLAG_SECURE, 1);
     HttpSendRequestA(hRequest, NULL, 0, (LPVOID)content.c_str(), strlen(content.c_str()));
 
     InternetCloseHandle(hSession);
@@ -96,6 +98,9 @@ void DetectAccidentPlugin::_ExitCaptureError(const wchar_t* title, const wchar_t
 
 void DetectAccidentPlugin::_DetectAccident()
 {
+    F8HorizontalCoordinateConverterProxy coordConverter = g_applicationServices
+        ->GetCoordinateConverter()->GetHorizontalCoordinateConvertor();
+
     while (isCapturing.load())
     {
         F8SimulationCoreProxy sim = g_applicationServices->GetSimulationCore();
@@ -166,7 +171,7 @@ void DetectAccidentPlugin::_DetectAccident()
 
         bool crash = sim->GetUserVariable(DA_VAR_IDX) > 0;
 
-        PositionUpdate upd(L"ExampleCar", coord.X, coord.Y, crash, roadName);
+        PositionUpdate upd(DA_CAR_NAME, coord.X, coord.Y, crash, roadName);
         PingCarPosition(upd);
         
         std::this_thread::sleep_for(std::chrono::milliseconds(TEST_PERIOD_MILISEC));
@@ -180,8 +185,8 @@ void DetectAccidentPlugin::_DetectAccident()
 
 void DetectAccidentPlugin::OnStartCaptureBtnClick()
 {
-    coordConverter = g_applicationServices->GetCoordinateConverter()->GetHorizontalCoordinateConvertor();
     _ReloadButtons(true);
+
     daThread = std::thread(&DetectAccidentPlugin::_DetectAccident, this);
     daThread.detach();
 }

@@ -15,8 +15,6 @@ private:
     void* startCaptureHandle;
     void* stopCaptureHandle;
 
-    F8HorizontalCoordinateConverterProxy coordConverter;
-
     std::thread daThread;
 
     void _ExitCaptureError(const wchar_t* title, const wchar_t* msg);
