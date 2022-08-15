@@ -19,21 +19,22 @@ exports.registerCar = functions.https.onCall((data, context) => {
     db.child(carId).set({token: fcmToken});
 });
 
-exports.pingPosition = functions.https.onCall(async (data, context) => {
-    if (data.is_crash) {
+exports.pingPosition = functions.https.onRequest(async (req, res) => {
+    if (req.body.is_crash) {
+
         const payload = {
             notification: {
                 title: "Nearby accident occured",
-                body: `Car ${data.car_id} at ${data.road_name}.\nContact the authority if necessary.`
+                body: `Car ${req.body.car_id} at ${req.body.road_name}.\nContact the authority if necessary.`
             }
         };
 
         const queryToken = admin.database().ref('users').orderByChild('token').once('value');
-        const tokensSnapshot = await Promise.all(queryToken);
+        const tokensSnapshot = await Promise.all([queryToken]);
 
-        if (!tokensSnapshot.hasChildren()) return;
+        if (!tokensSnapshot[0].hasChildren()) return;
 
-        let tokens = Object.keys(tokensSnapshot.val());
+        let tokens = Object.keys(tokensSnapshot[0].val());
 
         const response = await admin.messaging().sendToDevice(tokens, payload);
 
@@ -49,6 +50,8 @@ exports.pingPosition = functions.https.onCall(async (data, context) => {
             }
         });
 
-        return Promise.all(tokensToRemove);
+        await Promise.all(tokensToRemove);
     }
+
+    return res.status(200);
 });
