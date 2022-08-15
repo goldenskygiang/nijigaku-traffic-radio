@@ -42,10 +42,10 @@ void DetectAccidentPlugin::InitializeMenu()
     callback = std::bind(&DetectAccidentPlugin::OnStopCaptureBtnClick, this);
     stopCaptureHandle = stopCaptureBtn->SetCallbackOnClick(callback);
 
-    ReloadButtons(false);
+    _ReloadButtons(false);
 }
 
-void DetectAccidentPlugin::ReloadButtons(bool capturing)
+void DetectAccidentPlugin::_ReloadButtons(bool capturing)
 {
     isCapturing.store(capturing);
     startCaptureBtn->SetEnabled(!isCapturing.load());
@@ -76,19 +76,72 @@ void SendRequest(const wchar_t* hostname, const char* route, const char* method,
     InternetCloseHandle(hRequest);
 }
 
-void PingTestCameraPosition(F8dVec2 pos)
+void PingCarPosition(PositionUpdate upd)
 {
-    PositionUpdate upd("ExampleCar", pos.X, pos.Y, false);
     json p = upd;
-
     SendRequest(TEST_HOSTNAME, TEST_ROUTE, "POST", p.dump());
 }
 
-void DetectAccidentPlugin::DetectAccident()
+void DetectAccidentPlugin::_ExitCaptureError(const wchar_t* title, const wchar_t* msg)
+{
+    _ReloadButtons(false);
+
+    auto msgBox = MessageBox(
+        NULL,
+        msg,
+        title,
+        MB_ICONHAND
+    );
+}
+
+void DetectAccidentPlugin::_DetectAccident()
 {
     while (isCapturing.load())
     {
         F8SimulationCoreProxy sim = g_applicationServices->GetSimulationCore();
+
+        F8ProjectProxy proj = g_applicationServices->GetProject();
+        if (!Assigned(proj))
+        {
+            _ExitCaptureError(L"No opening project", L"Please open a project first.");
+            return;
+        }
+
+        F8ScenarioProxy scenario = NULL;
+        for (int i = 0; i < proj->GetScenariosCount(); i++)
+        {
+            if (wcscmp(proj->GetScenario(i)->GetName(), DA_SCENARIO_NAME) == 0)
+            {
+                scenario = proj->GetScenario(i);
+                break;
+            }
+        }
+
+        if (scenario == NULL || !Assigned(scenario))
+        {
+            _ExitCaptureError(
+                L"No specified scenario",
+                L"Please refer to the setup guide to create a separate scenario for the plugin.");
+            return;
+        }
+
+        F8EventProxy event = NULL;
+        for (int i = 0; i < scenario->GetEventsCount(); i++)
+        {
+            if (wcscmp(scenario->GetEvent(i)->GetName(), DA_EVENT_NAME) == 0)
+            {
+                event = scenario->GetEvent(i);
+                break;
+            }
+        }
+
+        if (event == NULL || !Assigned(event))
+        {
+            _ExitCaptureError(
+                L"Scenario misconfiguration",
+                L"Please create the event DA_Crash in the plugin scenario");
+            return;
+        }
 
         F8TrafficSimulationProxy traffic = sim->GetTrafficSimulation();
         F8MainDriverProxy driver = Assigned(traffic) ? traffic->GetDriver() : NULL;
@@ -96,20 +149,14 @@ void DetectAccidentPlugin::DetectAccident()
 
         if (!Assigned(driver) || !Assigned(car))
         {
-            ReloadButtons(false);
-
-            auto msgBox = MessageBox(
-                NULL,
-                L"Please start the driver simulation",
-                L"No traffic driver found",
-                MB_ICONHAND
-            );
-            
+            _ExitCaptureError(L"No traffic driver found", L"Please start the driver simulation");
             return;
         }
 
         auto pos = car->GetPosition();
         auto road = car->GetLatestRoad();
+
+        auto roadName = Assigned(road) ? road->GetName() : DA_UNKNOWN_ROAD;
 
         F8dVec2 xy, coord;
         xy.X = pos.X, xy.Y = pos.Y;
@@ -117,25 +164,29 @@ void DetectAccidentPlugin::DetectAccident()
 
         coordConverter->Convert(_hcOpenGL_XZ, _hcGlobal_EN, xy, coord, res);
 
-        // code to test camera pos & thread functionality.
+        bool crash = sim->GetUserVariable(DA_VAR_IDX) > 0;
 
-#ifndef NDEBUG
-        PingTestCameraPosition(coord);
-#endif
+        PositionUpdate upd(L"ExampleCar", coord.X, coord.Y, crash, roadName);
+        PingCarPosition(upd);
         
         std::this_thread::sleep_for(std::chrono::milliseconds(TEST_PERIOD_MILISEC));
+
+        if (crash)
+        {
+            sim->SetUserVariable(DA_VAR_IDX, 0);
+        }
     }
 }
 
 void DetectAccidentPlugin::OnStartCaptureBtnClick()
 {
     coordConverter = g_applicationServices->GetCoordinateConverter()->GetHorizontalCoordinateConvertor();
-    ReloadButtons(true);
-    daThread = std::thread(&DetectAccidentPlugin::DetectAccident, this);
+    _ReloadButtons(true);
+    daThread = std::thread(&DetectAccidentPlugin::_DetectAccident, this);
     daThread.detach();
 }
 
 void DetectAccidentPlugin::OnStopCaptureBtnClick()
 {
-    ReloadButtons(false);
+    _ReloadButtons(false);
 }

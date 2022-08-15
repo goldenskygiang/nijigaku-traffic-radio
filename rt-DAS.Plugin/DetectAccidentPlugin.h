@@ -19,8 +19,9 @@ private:
 
     std::thread daThread;
 
-    void ReloadButtons(bool capturing);
-    void DetectAccident();
+    void _ExitCaptureError(const wchar_t* title, const wchar_t* msg);
+    void _ReloadButtons(bool capturing);
+    void _DetectAccident();
 
     std::atomic<bool> isCapturing;
 
