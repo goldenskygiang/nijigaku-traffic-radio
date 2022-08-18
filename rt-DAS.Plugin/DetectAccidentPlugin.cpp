@@ -64,14 +64,17 @@ void DetectAccidentPlugin::UnloadMenu()
     }
 }
 
-void SendRequest(const wchar_t* hostname, const char* route, const char* method, std::string content)
+void SendRequest(const wchar_t* hostname, const char* route, const char* method, int port,
+    std::string content, DWORD dwFlag=INTERNET_FLAG_SECURE)
 {
+    PCSTR acceptTypes[] = { "*/*", NULL };
+
     HINTERNET hSession = InternetOpenA(NULL, INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
-    HINTERNET hConnect = InternetConnect(hSession, hostname, SSL_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 1);
+    HINTERNET hConnect = InternetConnect(hSession, hostname, port, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 1);
     HINTERNET hRequest = HttpOpenRequestA(
         hConnect, method, route,
-        NULL, NULL, NULL, INTERNET_FLAG_SECURE, 1);
-    HttpSendRequestA(hRequest, NULL, 0, (LPVOID)content.c_str(), strlen(content.c_str()));
+        NULL, NULL, acceptTypes, dwFlag, 1);
+    HttpSendRequestA(hRequest, "Content-Type:application/json\0", -1L, (LPVOID)content.c_str(), strlen(content.c_str()));
 
     InternetCloseHandle(hSession);
     InternetCloseHandle(hConnect);
@@ -81,7 +84,11 @@ void SendRequest(const wchar_t* hostname, const char* route, const char* method,
 void PingCarPosition(PositionUpdate upd)
 {
     json p = upd;
-    SendRequest(TEST_HOSTNAME, TEST_ROUTE, "POST", p.dump());
+#ifndef NDEBUG
+    SendRequest(TEST_HOSTNAME, TEST_ROUTE, "POST", TEST_PORT, p.dump(), NULL);
+#else
+    SendRequest(TEST_HOSTNAME, TEST_ROUTE, "POST", SSL_PORT, p.dump());
+#endif
 }
 
 void DetectAccidentPlugin::_ExitCaptureError(const wchar_t* title, const wchar_t* msg)

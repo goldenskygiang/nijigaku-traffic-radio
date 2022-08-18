@@ -1,14 +1,6 @@
 const functions = require("firebase-functions");
-
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
-
 const admin = require('firebase-admin');
+
 admin.initializeApp();
 
 exports.registerCar = functions.https.onCall((data, context) => {
@@ -16,12 +8,14 @@ exports.registerCar = functions.https.onCall((data, context) => {
     let fcmToken = data.token;
 
     let db = admin.database().ref('users');
-    db.child(carId).set({token: fcmToken});
+    db.child(carId).set({ token: fcmToken });
 });
 
 exports.pingPosition = functions.https.onRequest(async (req, res) => {
-    if (req.body.is_crash) {
 
+    functions.logger.log(req.body);
+
+    if (req.body.is_crash) {
         const payload = {
             notification: {
                 title: "Nearby accident occured",
@@ -29,10 +23,12 @@ exports.pingPosition = functions.https.onRequest(async (req, res) => {
             }
         };
 
-        const queryToken = admin.database().ref('users').orderByChild('token').once('value');
-        const tokensSnapshot = await Promise.all([queryToken]);
+        functions.logger.log(payload);
 
-        if (!tokensSnapshot[0].hasChildren()) return;
+        const tokenPromise = admin.database().ref('users').orderByChild('token').once('value');
+        let tokensSnapshot = await Promise.resolve(tokenPromise);
+
+        if (!tokensSnapshot.hasChildren()) return; // TODO: timeout at this line
 
         let tokens = Object.keys(tokensSnapshot[0].val());
 
@@ -47,11 +43,16 @@ exports.pingPosition = functions.https.onRequest(async (req, res) => {
                     error.code === 'messaging/registration-token-not-registered') {
                     tokensToRemove.push(tokensSnapshot.ref.child(tokens[index]).remove());
                 }
+
+                functions.logger.log('error in removing tokens');
             }
         });
 
         await Promise.all(tokensToRemove);
-    }
 
-    return res.status(200);
+        functions.logger.log("notification pushed");
+
+        res.status(200).send("crash happened");
+    }
+    else res.status(200).send("no crash");
 });
