@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#009578">
+  <title>Traffic Radio</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="img/logo.png">
+</head>
+<body>
+
+  <form action = "result.html" method = "GET">
+    <h1>Welcome to Traffic Radio</h1>
+
+    <form action="get_car_num.php">
+      <label for="car_num">Your car number:</label>
+      <input type="text" id="car_num" name="car_num" value=""><br>
+    </form> 
+
+    <p>Update events:</p>
+    <p>Updating...</p>
+
+    <button type="submit" formaction="/report.php">Report an Accident!</button>
+    <br>
+    <br>
+    <button type="submit" formaction="/report_with_photo.php">Report with photo 📷</button>
+  </form>
+
+  <p class = "note">Made by team ニジガク <br> @CPWC 2022 </p>
+
+  <script src=  "app.js"></script>
+
+</body>
+</html>
