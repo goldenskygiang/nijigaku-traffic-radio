@@ -1,0 +1,69 @@
+body {
+    background-color: #FFC5FF;
+    text-align: center;
+  }
+
+  Label {
+    font-family: "Aclonica";
+    text-align: center;
+    text-shadow: 1px 1px #FF93EC;
+  }
+  
+  h1 {
+    font-family: "Aclonica";
+    color: black;
+    text-shadow: 2px 2px #FF93EC;
+  }
+
+  h3 {
+    font-family: "Dekko";
+    font-size: 9px;
+    color: black;
+  }
+  
+  p {
+    font-family: verdana;
+    font-size: 13px;
+  }
+
+  table {
+    border: 1px solid black;
+    font-family: "Dekko";
+  }
+
+  form {
+    margin-bottom: 30px;
+  }
+
+
+
+  button{
+      font-family: "Dekko";
+      text-shadow: 1px 1px #741e57;
+      font-size: 20px;
+      border-radius: 30px;
+      padding: 10px;
+      color: white;
+      background-color: #FF85CD;
+  }
+
+  button:active{
+      font-family: "Dekko";
+      text-shadow: 2px 2px #5c1c31;
+      font-size: 21px;
+      border: 10px;
+      border-color:  #FF80A8;
+      border-radius: 30px;
+      padding: 11px;
+      color: white;
+      background-color: #FF85CD;
+}
+
+  .note{
+      font-size: 5px;
+      color: gray;
+  }
+  .news{
+      font-family: "Aclonica";
+      margin-bottom: 30px;
+  }
