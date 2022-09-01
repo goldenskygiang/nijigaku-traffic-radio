@@ -13,7 +13,7 @@ static const int DA_VAR_IDX = 98;
 static const wchar_t* DA_CAR_NAME = L"Example Car";
 
 static const wchar_t* TEST_HOSTNAME = L"localhost";
-static const char* TEST_ROUTE = "/rt-das-719e2/us-central1/pingPosition";
+static const char* TEST_ROUTE = "/nijigaku-traffic-radio/asia-southeast1/pingPosition";
 static const int TEST_PERIOD_MILISEC = 5000;
 static const int TEST_PORT = 5001;
 
