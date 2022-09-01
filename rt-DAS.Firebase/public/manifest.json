@@ -2,8 +2,8 @@
     "name" : "Nijigaku Traffic Radio",
     "short_name" : "Traffic Radio",
     "start_url" : ".",
-    "background_color": "#6dcdb1",
-    "theme_color": "#009578",
+    "background_color": "#FFBFFA",
+    "theme_color": "#FF80A8",
     "display": "standalone",
     "orientation": "portrait-primary",
     "icons": [

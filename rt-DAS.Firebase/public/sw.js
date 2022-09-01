@@ -7,6 +7,9 @@ const assets =[
     'img/logo.png'
 ];
 
+importScripts('https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js');
+importScripts('https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js');
+
 //install sw, to be filled with acessing cache
 self.addEventListener('install', evt =>{
     //console.log('service worker installed');
