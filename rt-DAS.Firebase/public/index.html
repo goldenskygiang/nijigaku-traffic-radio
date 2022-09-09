@@ -22,10 +22,16 @@
     <input type="text" id="car_num" name="car_num" value=""><br>
     </form> 
     
+<div id = "before-reg">
+  <button onclick= "resetUI()" >☑ Register now ☑</button>
+</div>
+
+<div id = "after-reg" display style="display: none;">
 
     <div id = "news">
-      <p>Updating latest news...</p>
+      <p>Updating latest news here...</p>
     </div>
+  </br>
 
     <button type="submit" formaction="report.js">Report an accident ⚠️</button>
     <br>
@@ -43,10 +49,10 @@
       }
     </script> 
 
-
   <p class = "note">Made by team ニジガク <br> @CPWC 2022 </p>
-
   </form>
+
+</div>
 
   <!-- Import and configure the Firebase SDK -->
 <!-- These scripts are made available when the app is served or deployed on Firebase Hosting -->
@@ -55,6 +61,15 @@
 <script src="/__/firebase/9.9.3/firebase-messaging-compat.js"></script>
 <script src="/__/firebase/init.js"></script>
 
+<!--Text to speech-->
+<script>
+  function speak (message) {
+   var msg = new SpeechSynthesisUtterance(message)
+   var voices = window.speechSynthesis.getVoices()
+   msg.voice = voices[0]
+   window.speechSynthesis.speak(msg)
+}
+</script>
 <script>
   // Retrieve Firebase Messaging object.
   const messaging = firebase.messaging();
@@ -68,7 +83,8 @@
   // - the user clicks on an app notification created by a service worker
   //   `messaging.onBackgroundMessage` handler.
   messaging.onMessage((payload) => {
-    console.log('Message received. ', payload);
+
+    console.log('Message received. ', typeof(payload), payload);
     // Update the UI to include the received message.
     appendMessage(payload);
   });
@@ -108,7 +124,7 @@
       console.log('Sending token to server...');
       
       
-      // TODO(developer): Send the current token to your server.
+      // send tolen to server here
 
 
       setTokenSentToServer(true);
@@ -144,16 +160,17 @@
   // Add a message to the messages element.
   function appendMessage(payload) {
     const messagesElement = document.getElementById("news");
-    messagesElement.innerHTML = payload;
+    messagesElement.innerHTML = payload.notification.body;
+    speak(payload.notification.body)
   }
 
   function updateUIForPushEnabled(currentToken) {
     showToken(currentToken);
     const tit = document.getElementById("Title");
-    tit.innerHTML = "Traffic Radio 🟢";
+    tit.innerHTML = "</br>Traffic Radio 🟢";
+    document.getElementById("before-reg").style.display = "none";
+    document.getElementById("after-reg").style.display = "block";
   }
-
-  resetUI();
 </script>
 
   <script src=  "app.js"></script>
