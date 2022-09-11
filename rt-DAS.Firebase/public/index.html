@@ -17,14 +17,31 @@
 
   <form action = "index.html" method = "Post" class = "main">
 
-    <form action="get_car_num.php">
+    <form id="get_car_num">
     <label for="car_num">Your car number:</label>
-    <input type="text" id="car_num" name="car_num" value=""><br>
+    </br>
+    <input type="text" id="car_num" name="car_num" value=""> </br>
+    <script> document.getElementById('car_num').value = window.localStorage.getItem('car_id') </script>
     </form> 
     
 <div id = "before-reg">
-  <button onclick= "resetUI()" >☑ Register now ☑</button>
+  <button onclick= "register()" >☑ Register now ☑</button>
 </div>
+
+<script>
+  function register() {
+  car_num = document.getElementById("car_num").value;
+  if (car_num === "" ){
+    alert("Must enter your car ID");
+  } else {
+    var format = /[`!@#$%^&*()_+\.=\[\]{};':"\\|,<>\/?~]/;
+      if( format.test(car_num)){
+        alert("Car ID must not have special characters");
+      } 
+      else{
+        resetUI();}
+      }}
+</script>
 
 <div id = "after-reg" display style="display: none;">
 
@@ -39,6 +56,8 @@
     <input id = "capture" type="file" name="image" accept="image/*" capture="environment" hidden>
     <button id = "opencamera" type="submit" formaction="report_with_photo.js">Report with a photo 📷</button>
     
+    
+
     <script>
       var el = document.getElementById('opencamera');
       if(el){
@@ -57,9 +76,13 @@
   <!-- Import and configure the Firebase SDK -->
 <!-- These scripts are made available when the app is served or deployed on Firebase Hosting -->
 <!-- If you do not serve/host your project using Firebase Hosting see https://firebase.google.com/docs/web/setup -->
-<script src="/__/firebase/9.9.3/firebase-app-compat.js"></script>
-<script src="/__/firebase/9.9.3/firebase-messaging-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-functions-compat.js"></script>
 <script src="/__/firebase/init.js"></script>
+
+<script src=  "app.js"></script>
 
 <!--Text to speech-->
 <script>
@@ -71,6 +94,7 @@
 }
 </script>
 <script>
+
   // Retrieve Firebase Messaging object.
   const messaging = firebase.messaging();
 
@@ -122,10 +146,19 @@
   function sendTokenToServer(currentToken) {
     if (!isTokenSentToServer()) {
       console.log('Sending token to server...');
-      
-      
-      // send tolen to server here
 
+      var data = new Object();
+      data.car_id = document.getElementById("car_num").value;
+      data.token = currentToken;
+
+      window.localStorage.setItem('car_id', data.car_id)
+
+      var registerCar = firebase.app().functions('asia-southeast1').httpsCallable('registerCar');
+      registerCar(data)
+        .then((result) => {
+        console.log(data);
+        //var sanitizedMessage = result.data.text;
+        }); 
 
       setTokenSentToServer(true);
     } else {
@@ -135,7 +168,8 @@
   }
 
   function isTokenSentToServer() {
-    return window.localStorage.getItem('sentToServer') === '1';
+    //return window.localStorage.getItem('sentToServer') === '1';
+    return false;
   }
 
   function setTokenSentToServer(sent) {
@@ -172,8 +206,6 @@
     document.getElementById("after-reg").style.display = "block";
   }
 </script>
-
-  <script src=  "app.js"></script>
 
 </body>
 </html>
