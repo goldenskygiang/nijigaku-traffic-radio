@@ -28,12 +28,16 @@ exports.pingPosition = functions.https.onRequest(async (req, res) => {
         const users = admin.database().ref('users');
 
         let tokens = [];
-        users.orderByKey().on("child_added", (snapshot) => {
-            tokens.push(snapshot.val());
-        });
+        let snapshot = await users.once("value");
+        let vehicles = snapshot.val();
+
+        let tokens = [];
+        for (const [key, val] of Object.entries(vehicles)) {
+            tokens.push(val);
+        }
 
         if (tokens.length == 0) {
-            res.status(200).send("no device to push notification");
+            res.status(404).send("no device to push notification");
             return;
         }
 
@@ -57,7 +61,7 @@ exports.pingPosition = functions.https.onRequest(async (req, res) => {
 
         functions.logger.log("notification pushed");
 
-        res.status(200).send("crash happened");
+        res.status(201).send("crash happened");
     }
     else res.status(200).send("no crash");
 });
