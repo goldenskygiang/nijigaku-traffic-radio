@@ -84,10 +84,9 @@ void SendRequest(const wchar_t* hostname, const char* route, const char* method,
 void PingCarPosition(PositionUpdate upd)
 {
     json p = upd;
+    SendRequest(SERVER_HOSTNAME, SERVER_ROUTE, "POST", SSL_PORT, p.dump());
 #ifndef NDEBUG
     SendRequest(TEST_HOSTNAME, TEST_ROUTE, "POST", TEST_PORT, p.dump(), NULL);
-#else
-    SendRequest(TEST_HOSTNAME, TEST_ROUTE, "POST", SSL_PORT, p.dump());
 #endif
 }
 

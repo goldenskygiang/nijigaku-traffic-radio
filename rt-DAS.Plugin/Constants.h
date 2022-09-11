@@ -17,4 +17,6 @@ static const char* TEST_ROUTE = "/nijigaku-traffic-radio/asia-southeast1/pingPos
 static const int TEST_PERIOD_MILISEC = 5000;
 static const int TEST_PORT = 5001;
 
+static const wchar_t* SERVER_HOSTNAME = L"asia-southeast1-nijigaku-traffic-radio.cloudfunctions.net";
+static const char* SERVER_ROUTE = "/pingPosition";
 static const int SSL_PORT = 443;
