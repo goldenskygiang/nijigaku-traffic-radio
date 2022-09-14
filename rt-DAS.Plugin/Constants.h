@@ -10,7 +10,7 @@ static const wchar_t* DA_SCENARIO_NAME = L"DA Plugin - Detect Accident";
 static const wchar_t* DA_EVENT_NAME = L"DA_Crash";
 static const wchar_t* DA_UNKNOWN_ROAD = L"Unknown Road";
 static const int DA_VAR_IDX = 98;
-static const wchar_t* DA_CAR_NAME = L"Example Car";
+static const wchar_t* DA_DEFAULT_CAR_NAME = L"30A-00001";
 
 static const wchar_t* TEST_HOSTNAME = L"localhost";
 static const char* TEST_ROUTE = "/nijigaku-traffic-radio/asia-southeast1/pingPosition";

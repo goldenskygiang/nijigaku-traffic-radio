@@ -32,15 +32,31 @@ void DetectAccidentPlugin::InitializeMenu()
     ribbonGroup = ribbonTab->CreateGroup(DA_NAME, DA_ORDER);
     ribbonGroup->SetCaption(DA_CAPTION);
 
-    startCaptureBtn = ribbonGroup->CreateButton(L"StartCaptureBtn");
+    F8MainRibbonPanelProxy txtPanel = ribbonGroup->CreatePanel(L"Panel_TxtInput");
+    F8MainRibbonPanelProxy btnPanel = ribbonGroup->CreatePanel(L"Panel_BtnInput");
+
+    F8MainRibbonLabelProxy txtPanelLabel = txtPanel->CreateLabel(L"Panel_TxtInput_Label");
+    txtPanelLabel->SetCaption(L"Car plate number (Required)");
+    carNumberTxt = txtPanel->CreateEdit(L"CarNumberTxt");
+    carNumberTxt->SetText(DA_DEFAULT_CAR_NAME);
+    carNumberTxt->SetTop(txtPanelLabel->GetTop() + txtPanelLabel->GetHeight() + 6);
+
+    startCaptureBtn = btnPanel->CreateButton(L"StartCaptureBtn");
     startCaptureBtn->SetCaption(L"Start Capture");
     Cb_RibbonMenuItemOnClick callback = std::bind(&DetectAccidentPlugin::OnStartCaptureBtnClick, this);
     startCaptureHandle = startCaptureBtn->SetCallbackOnClick(callback);
 
-    stopCaptureBtn = ribbonGroup->CreateButton(L"StopCaptureBtn");
+    stopCaptureBtn = btnPanel->CreateButton(L"StopCaptureBtn");
     stopCaptureBtn->SetCaption(L"Stop Capture");
+    stopCaptureBtn->SetTop(startCaptureBtn->GetTop() + startCaptureBtn->GetHeight() + 6);
     callback = std::bind(&DetectAccidentPlugin::OnStopCaptureBtnClick, this);
     stopCaptureHandle = stopCaptureBtn->SetCallbackOnClick(callback);
+
+    txtPanel->SetWidth(max(txtPanelLabel->GetWidth(), carNumberTxt->GetWidth()) + 6);
+    txtPanel->SetHeight(txtPanelLabel->GetHeight() + carNumberTxt->GetHeight() + 6);
+
+    btnPanel->SetWidth(startCaptureBtn->GetWidth() + 6);
+    btnPanel->SetHeight(startCaptureBtn->GetHeight() + stopCaptureBtn->GetHeight() + 6);
 
     _ReloadButtons(false);
 }
@@ -49,6 +65,7 @@ void DetectAccidentPlugin::_ReloadButtons(bool capturing)
 {
     isCapturing.store(capturing);
     startCaptureBtn->SetEnabled(!isCapturing.load());
+    carNumberTxt->SetEnabled(!isCapturing.load());
     stopCaptureBtn->SetEnabled(isCapturing.load());
 }
 
@@ -102,10 +119,27 @@ void DetectAccidentPlugin::_ExitCaptureError(const wchar_t* title, const wchar_t
     );
 }
 
+bool isValidCarName(std::wstring carNum)
+{
+    std::wstring banned = L".$#[]/";
+
+    return std::none_of(carNum.begin(), carNum.end(), [banned](wchar_t s)
+        {
+            return banned.find(s) != std::wstring::npos;
+        });
+}
+
 void DetectAccidentPlugin::_DetectAccident()
 {
     F8HorizontalCoordinateConverterProxy coordConverter = g_applicationServices
         ->GetCoordinateConverter()->GetHorizontalCoordinateConvertor();
+
+    std::wstring carNum = carNumberTxt->GetText();
+    if (!isValidCarName(carNum))
+    {
+        _ExitCaptureError(L"Invalid car number", L"Car number must not contain any of those characters: '.', '$', '#', '[', ']', '/'.\nPlease type again");
+        return;
+    }
 
     while (isCapturing.load())
     {
@@ -177,7 +211,7 @@ void DetectAccidentPlugin::_DetectAccident()
 
         bool crash = sim->GetUserVariable(DA_VAR_IDX) > 0;
 
-        PositionUpdate upd(DA_CAR_NAME, coord.X, coord.Y, crash, roadName);
+        PositionUpdate upd(carNum, coord.X, coord.Y, crash, roadName);
         PingCarPosition(upd);
         
         std::this_thread::sleep_for(std::chrono::milliseconds(TEST_PERIOD_MILISEC));
