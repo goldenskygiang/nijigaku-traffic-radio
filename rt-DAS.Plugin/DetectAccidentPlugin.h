@@ -10,6 +10,7 @@ private:
     F8MainRibbonTabProxy ribbonTab;
     F8MainRibbonGroupProxy ribbonGroup;
 
+    F8MainRibbonEditProxy carNumberTxt;
     F8MainRibbonButtonProxy startCaptureBtn;
     F8MainRibbonButtonProxy stopCaptureBtn;
     void* startCaptureHandle;
