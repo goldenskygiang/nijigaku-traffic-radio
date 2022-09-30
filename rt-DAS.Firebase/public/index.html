@@ -13,18 +13,42 @@
 </head>
 <body>
 
-  <h1></br>Traffic Radio</h1>
+  <h1 id = "Title"></br>Traffic Radio 🟠</h1>
 
   <form action = "index.html" method = "Post" class = "main">
 
-    <form action="get_car_num.php"></form>
+    <form id="get_car_num">
     <label for="car_num">Your car number:</label>
-    <input type="text" id="car_num" name="car_num" value=""><br>
+    </br>
+    <input type="text" id="car_num" name="car_num" value=""> </br>
+    <script> document.getElementById('car_num').value = window.localStorage.getItem('car_id') </script>
+    </form> 
     
+<div id = "before-reg">
+  <button onclick= "register()" >☑ Register now ☑</button>
+</div>
 
-    <div class = "news">
-      <p>//Latest news should also be updated here in case the noti disappers</p>
+<script>
+  function register() {
+  car_num = document.getElementById("car_num").value;
+  if (car_num === "" ){
+    alert("Must enter your car ID");
+  } else {
+    var format = /[`!@#$%^&*()_+\.=\[\]{};':"\\|,<>\/?~]/;
+      if( format.test(car_num)){
+        alert("Car ID must not have special characters");
+      } 
+      else{
+        resetUI();}
+      }}
+</script>
+
+<div id = "after-reg" display style="display: none;">
+
+    <div id = "news">
+      <p>Updating latest news here...</p>
     </div>
+  </br>
 
     <button type="submit" formaction="report.js">Report an accident ⚠️</button>
     <br>
@@ -32,6 +56,8 @@
     <input id = "capture" type="file" name="image" accept="image/*" capture="environment" hidden>
     <button id = "opencamera" type="submit" formaction="report_with_photo.js">Report with a photo 📷</button>
     
+    
+
     <script>
       var el = document.getElementById('opencamera');
       if(el){
@@ -42,8 +68,144 @@
       }
     </script> 
 
-
   <p class = "note">Made by team ニジガク <br> @CPWC 2022 </p>
-
   </form>
-  <script src=  "app.js"></script>
+
+</div>
+
+  <!-- Import and configure the Firebase SDK -->
+<!-- These scripts are made available when the app is served or deployed on Firebase Hosting -->
+<!-- If you do not serve/host your project using Firebase Hosting see https://firebase.google.com/docs/web/setup -->
+
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-functions-compat.js"></script>
+<script src="/__/firebase/init.js"></script>
+
+<script src=  "app.js"></script>
+
+<!--Text to speech-->
+<script>
+  function speak (message) {
+   var msg = new SpeechSynthesisUtterance(message)
+   var voices = window.speechSynthesis.getVoices()
+   msg.voice = voices[0]
+   window.speechSynthesis.speak(msg)
+}
+</script>
+<script>
+
+  // Retrieve Firebase Messaging object.
+  const messaging = firebase.messaging();
+
+  // IDs of divs that display registration token UI or request permission UI.
+  const tokenDivId = 'token_div';
+  const permissionDivId = 'permission_div';
+
+  // Handle incoming messages. Called when:
+  // - a message is received while the app has focus
+  // - the user clicks on an app notification created by a service worker
+  //   `messaging.onBackgroundMessage` handler.
+  messaging.onMessage((payload) => {
+
+    console.log('Message received. ', typeof(payload), payload);
+    // Update the UI to include the received message.
+    appendMessage(payload);
+  });
+
+  function resetUI() {
+
+    showToken('token is loading...');
+    // Get registration token. Initially this makes a network call, once retrieved
+    // subsequent calls to getToken will return from cache.
+    messaging.getToken({vapidKey: 'BNxAEElLuMcjhePZpC_YVjTKb3JE41_Bi7rklyFQRVhil0KhHMGwJkJjP8x-MuTHTtK5Tmoper5i5OAIBuUz4tI'}).then((currentToken) => {
+      if (currentToken) {
+        sendTokenToServer(currentToken);
+        updateUIForPushEnabled(currentToken);
+      } else {
+        // Show permission request.
+        console.log('No registration token available. Request permission to generate one.');
+        // Show permission UI.
+        updateUIForPushPermissionRequired();
+        setTokenSentToServer(false);
+      }
+    }).catch((err) => {
+      console.log('An error occurred while retrieving token. ', err);
+      showToken('Error retrieving registration token. ', err);
+      setTokenSentToServer(false);
+    });
+  }
+
+  function showToken(currentToken) {
+    console.log(currentToken);
+  }
+
+  // Send the registration token your application server, so that it can:
+  // - send messages back to this app
+  // - subscribe/unsubscribe the token from topics
+  function sendTokenToServer(currentToken) {
+    if (!isTokenSentToServer()) {
+      console.log('Sending token to server...');
+
+      var data = new Object();
+      data.car_id = document.getElementById("car_num").value;
+      data.token = currentToken;
+
+      window.localStorage.setItem('car_id', data.car_id)
+
+      var registerCar = firebase.app().functions('asia-southeast1').httpsCallable('registerCar');
+      registerCar(data)
+        .then((result) => {
+        console.log(data);
+        //var sanitizedMessage = result.data.text;
+        }); 
+
+      setTokenSentToServer(true);
+    } else {
+      console.log('Token already sent to server so won\'t send it again ' +
+          'unless it changes');
+    }
+  }
+
+  function isTokenSentToServer() {
+    //return window.localStorage.getItem('sentToServer') === '1';
+    return false;
+  }
+
+  function setTokenSentToServer(sent) {
+    window.localStorage.setItem('sentToServer', sent ? '1' : '0');
+  }
+
+  function requestPermission() {
+    console.log('Requesting permission...');
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+        console.log('Notification permission granted.');
+        // TODO(developer): Retrieve a registration token for use with FCM.
+        // In many cases once an app has been granted notification permission,
+        // it should update its UI reflecting this.
+        resetUI();
+      } else {
+        console.log('Unable to get permission to notify.');
+      }
+    });
+  }
+
+  // Add a message to the messages element.
+  function appendMessage(payload) {
+    const messagesElement = document.getElementById("news");
+    messagesElement.innerHTML = payload.notification.body;
+    speak(payload.notification.body)
+  }
+
+  function updateUIForPushEnabled(currentToken) {
+    showToken(currentToken);
+    const tit = document.getElementById("Title");
+    tit.innerHTML = "</br>Traffic Radio 🟢";
+    document.getElementById("before-reg").style.display = "none";
+    document.getElementById("after-reg").style.display = "block";
+  }
+</script>
+
+</body>
+</html>
