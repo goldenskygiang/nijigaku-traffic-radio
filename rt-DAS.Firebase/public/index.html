@@ -34,7 +34,7 @@
   if (car_num === "" ){
     alert("Must enter your car ID");
   } else {
-    var format = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,<>\/?~]/;
+    var format = /[`!@#$%^&*()_+\.=\[\]{};':"\\|,<>\/?~]/;
       if( format.test(car_num)){
         alert("Car ID must not have special characters");
       } 
@@ -45,9 +45,21 @@
 
 <div id = "after-reg" display style="display: none;">
 
-    <div id = "news">
-      <p>Updating latest news here...</p>
-    </div>
+    <p><a id = "news1" href ="javascript:void(0)">
+      Updating latest news here...
+      </a></p>
+    <p><a id = "news2" href ="javascript:void(0)">
+      -
+    </a></p>
+    <p><a id = "news3" href ="javascript:void(0)">
+      -
+    </a></p>
+    <p><a id = "news4" href ="javascript:void(0)">
+      -
+    </a></p>
+    <p><a id = "news5" href ="javascript:void(0)">
+      -
+    </a></p>
   </br>
 
     <button type="submit" formaction="report.js">Report an accident ⚠️</button>
@@ -193,9 +205,29 @@
 
   // Add a message to the messages element.
   function appendMessage(payload) {
-    const messagesElement = document.getElementById("news");
-    messagesElement.innerHTML = payload.notification.body;
+    console.log(payload);
+    var today = new Date();
+    var time = "[" + today.getHours() + ":" + ("0" + today.getMinutes()).slice(-2) + "] ";
     speak(payload.notification.body)
+    document.getElementById("news5").innerHTML = document.getElementById("news4").innerHTML;
+    document.getElementById("news4").innerHTML = document.getElementById("news3").innerHTML;
+    document.getElementById("news3").innerHTML = document.getElementById("news2").innerHTML;
+    document.getElementById("news2").innerHTML = document.getElementById("news1").innerHTML;
+    const messagesElement = document.getElementById("news1");
+    messagesElement.innerHTML = time + payload.notification.body;
+    var coord = JSON.parse(payload.data.json);
+    console.log(coord);
+    var mapurl = "https://www.google.com/maps/search/?api=1&query=" + coord.Y + "," + coord.X;
+    document.getElementById("news5").href = document.getElementById("news4").href;
+    document.getElementById("news4").href = document.getElementById("news3").href;
+    document.getElementById("news3").href = document.getElementById("news2").href;
+    document.getElementById("news2").href = document.getElementById("news1").href;
+    document.getElementById("news1").href = mapurl;
+    document.getElementById("news5").target = document.getElementById("news4").target;
+    document.getElementById("news4").target = document.getElementById("news3").target;
+    document.getElementById("news3").target = document.getElementById("news2").target;
+    document.getElementById("news2").target = document.getElementById("news1").target;
+    document.getElementById("news1").target = "blank";
   }
 
   function updateUIForPushEnabled(currentToken) {
