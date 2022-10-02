@@ -12,22 +12,22 @@ exports.registerCar = functions.https.onCall((data, context) => {
 });
 
 exports.pingPosition = functions.https.onRequest(async (req, res) => {
-
-    functions.logger.log(req.body);
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Headers', '*');
 
     if (req.body.is_crash) {
         const payload = {
             notification: {
                 title: "Nearby accident occured",
-                body: `Car ${req.body.car_id} at ${req.body.road_name}.\nContact the authority if necessary.`
+                body: `Accident occured at ${req.body.road_name} with Car ${req.body.car_id}.`
+            },
+            data: {
+                json: JSON.stringify(req.body)
             }
         };
 
-        functions.logger.log(payload);
-
         const users = admin.database().ref('users');
 
-        let tokens = [];
         let snapshot = await users.once("value");
         let vehicles = snapshot.val();
 
@@ -41,25 +41,7 @@ exports.pingPosition = functions.https.onRequest(async (req, res) => {
             return;
         }
 
-        const response = await admin.messaging().sendToDevice(tokens, payload);
-
-        // const tokensToRemove = [];
-        // response.results.forEach((result, index) => {
-        //     const error = result.error;
-        //     if (error) {
-        //         // Cleanup the tokens who are not registered anymore.
-        //         if (error.code === 'messaging/invalid-registration-token' ||
-        //             error.code === 'messaging/registration-token-not-registered') {
-        //             tokensToRemove.push(users.ref.child(tokens[index]).remove());
-        //         }
-
-        //         functions.logger.log('error in removing tokens');
-        //     }
-        // });
-
-        // await Promise.all(tokensToRemove);
-
-        functions.logger.log("notification pushed");
+        await admin.messaging().sendToDevice(tokens, payload);
 
         res.status(201).send("crash happened");
     }
