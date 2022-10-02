@@ -207,7 +207,7 @@ void DetectAccidentPlugin::_DetectAccident()
         xy.X = pos.X, xy.Y = pos.Y;
         F8HcsConvertResultType res;
 
-        coordConverter->Convert(_hcOpenGL_XZ, _hcGlobal_EN, xy, coord, res);
+        coordConverter->Convert(_hcOpenGL_XZ, _hcProjectGCS_LonLat, xy, coord, res);
 
         bool crash = sim->GetUserVariable(DA_VAR_IDX) > 0;
 
