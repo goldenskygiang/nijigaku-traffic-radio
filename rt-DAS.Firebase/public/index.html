@@ -106,13 +106,30 @@
           xhr.send(JSON.stringify(rep));
         }
 
+        function man_report_error(error) {
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              alert("User denied the request for Geolocation.");
+              break;
+            case error.POSITION_UNAVAILABLE:
+              alert("Location information is unavailable.");
+              break;
+            case error.TIMEOUT:
+              alert("The request to get user location timed out.");
+              break;
+            case error.UNKNOWN_ERROR:
+              alert("An unknown error occurred.");
+              break;
+          }
+        }
+
         function activate_geolocation() {
           if (!navigator.geolocation) {
             alert('This device does not support Geolocation API');
             return;
           }
 
-          navigator.geolocation.getCurrentPosition(man_report);
+          navigator.geolocation.getCurrentPosition(man_report, man_report_error);
         }
       </script>
 
